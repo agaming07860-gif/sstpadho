@@ -1,0 +1,6 @@
+{
+  "name": "SSTPadho by Arshad",
+  "description": "Complete digital SST library and learning platform with chapters, interactive notes, question bank, map lab, history timelines, and revision mode.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
