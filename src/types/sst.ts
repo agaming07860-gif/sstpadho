@@ -128,6 +128,8 @@ export interface MapLocation {
   state: string;
   x: number; // percentage 0 - 100 on India SVG map
   y: number; // percentage 0 - 100 on India SVG map
+  lat?: number; // Real-world GPS latitude
+  lng?: number; // Real-world GPS longitude
   description: string;
   examSignificance: string;
   relatedChapter?: string;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   BookOpen,
   Zap,
@@ -12,10 +12,15 @@ import {
   ListOrdered,
   Eye,
   ChevronRight,
+  ChevronLeft,
   ArrowLeft,
+  ArrowRight,
   RotateCcw,
   Sparkles,
   Share2,
+  Check,
+  X,
+  Trophy,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Chapter } from '../types/sst';
@@ -58,28 +63,39 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
   const [revealedAnswers, setRevealedAnswers] = useState<Record<string, boolean>>({});
   const [selectedQuestionType, setSelectedQuestionType] = useState<string>('all');
 
-  // Quiz state
+  // Quiz state (One-by-one submission flow)
+  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
-  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [submittedQuestions, setSubmittedQuestions] = useState<Record<number, boolean>>({});
+  const [quizFinished, setQuizFinished] = useState(false);
+  const [showFullReview, setShowFullReview] = useState(false);
 
   const subMeta = SUBJECTS[chapter.subject];
   const isCompleted = isChapterCompleted(chapter.id);
   const isBookmarked = isChapterBookmarked(chapter.id);
 
-  // MCQ questions for quiz
-  const mcqQuestions = chapter.questions.filter((q) => q.type === 'mcq' && q.options);
+  // MCQ questions for quiz (maximum 5 quiz questions per chapter)
+  const mcqQuestions = useMemo(
+    () => chapter.questions.filter((q) => q.type === 'mcq' && q.options).slice(0, 5),
+    [chapter]
+  );
 
   const toggleAnswer = (qId: string) => {
     setRevealedAnswers((prev) => ({ ...prev, [qId]: !prev[qId] }));
   };
 
-  const handleSelectQuizOption = (qIdx: number, optIdx: number) => {
-    if (quizSubmitted) return;
-    setQuizAnswers((prev) => ({ ...prev, [qIdx]: optIdx }));
+  const handleSelectQuizOption = (optIdx: number) => {
+    if (submittedQuestions[currentQuizIndex] || quizFinished) return;
+    setQuizAnswers((prev) => ({ ...prev, [currentQuizIndex]: optIdx }));
   };
 
-  const handleQuizSubmit = () => {
-    setQuizSubmitted(true);
+  const handleSubmitCurrentQuestion = () => {
+    if (quizAnswers[currentQuizIndex] === undefined) return;
+    setSubmittedQuestions((prev) => ({ ...prev, [currentQuizIndex]: true }));
+  };
+
+  const handleFinishQuiz = () => {
+    setQuizFinished(true);
     let correctCount = 0;
     mcqQuestions.forEach((q, idx) => {
       if (quizAnswers[idx] === q.correctOptionIndex) {
@@ -102,9 +118,26 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
     }
   };
 
+  const handleNextQuestion = () => {
+    if (currentQuizIndex < mcqQuestions.length - 1) {
+      setCurrentQuizIndex((prev) => prev + 1);
+    } else {
+      handleFinishQuiz();
+    }
+  };
+
+  const handlePreviousQuestion = () => {
+    if (currentQuizIndex > 0) {
+      setCurrentQuizIndex((prev) => prev - 1);
+    }
+  };
+
   const handleResetQuiz = () => {
     setQuizAnswers({});
-    setQuizSubmitted(false);
+    setSubmittedQuestions({});
+    setCurrentQuizIndex(0);
+    setQuizFinished(false);
+    setShowFullReview(false);
   };
 
   const filteredQuestions = chapter.questions.filter((q) => {
@@ -116,15 +149,15 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
     <div className="space-y-6 pb-20">
       {/* Top Breadcrumb & Controls */}
       <div className="flex items-center justify-between no-print gap-2 flex-wrap">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
-            id="chapter-backspace-btn"
+            id="chapter-back-btn"
             onClick={onBack}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 px-3.5 py-1.5 rounded-xl border border-blue-400/40 shadow-xs transition-colors group"
             title="Go back (Backspace key)"
           >
             <span className="font-mono text-sm leading-none font-bold text-sky-200 group-hover:text-white">⌫</span>
-            <span>Backspace</span>
+            <span>Back</span>
             <kbd className="hidden sm:inline-block text-[9px] px-1 py-0.2 bg-blue-800/80 rounded font-mono border border-blue-400/30">⌫</kbd>
           </button>
 
@@ -133,15 +166,15 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
             className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Back to</span> Class {chapter.classLevel}
+            <span>Class {chapter.classLevel}</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           {/* Bookmark Button */}
           <button
             onClick={() => toggleBookmarkChapter(chapter.id)}
-            className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+            className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors ${
               isBookmarked
                 ? 'bg-amber-100 border-amber-300 text-amber-800'
                 : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -149,30 +182,31 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
             title="Bookmark Chapter"
           >
             <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-amber-500 text-amber-500' : ''}`} />
-            <span className="hidden sm:inline">{isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
+            <span>{isBookmarked ? 'Saved' : 'Save'}</span>
           </button>
 
           {/* Mark Completed Button */}
           <button
             onClick={() => toggleChapterCompleted(chapter.id)}
-            className={`p-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+            className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors ${
               isCompleted
                 ? 'bg-emerald-100 border-emerald-300 text-emerald-800'
                 : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
             }`}
+            title="Mark Completed"
           >
             <CheckCircle2 className={`w-4 h-4 ${isCompleted ? 'text-emerald-600' : ''}`} />
-            <span className="hidden sm:inline">{isCompleted ? 'Completed' : 'Mark Completed'}</span>
+            <span>{isCompleted ? 'Done' : 'Mark Done'}</span>
           </button>
 
           {/* Printable / Download PDF Button */}
           <button
             onClick={() => onOpenPrintModal(chapter)}
-            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
             title="Print or Export Formatted Notes"
           >
             <Printer className="w-4 h-4 text-amber-400" />
-            <span>Print Notes</span>
+            <span>Print</span>
           </button>
         </div>
       </div>
@@ -212,54 +246,54 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
         </div>
       </div>
 
-      {/* Main 4 Navigation Tabs */}
-      <div className="flex items-center gap-1 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 text-xs font-bold overflow-x-auto no-print">
+      {/* Main 4 Navigation Tabs - Responsive 2x2 grid on mobile, 4-column row on tablet & laptop */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 text-xs font-bold no-print">
         <button
           onClick={() => setActiveTab('notes')}
-          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
+          className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl transition-all text-center min-h-[42px] ${
             activeTab === 'notes'
               ? 'bg-white text-amber-900 shadow-xs'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          <BookOpen className="w-4 h-4 text-amber-600" />
-          📝 Complete Notes
+          <BookOpen className="w-4 h-4 text-amber-600 shrink-0" />
+          <span>📝 Notes</span>
         </button>
 
         <button
           onClick={() => setActiveTab('revision')}
-          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
+          className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl transition-all text-center min-h-[42px] ${
             activeTab === 'revision'
               ? 'bg-white text-rose-900 shadow-xs'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          <Zap className="w-4 h-4 text-rose-600" />
-          ⚡ 10-Min Revision
+          <Zap className="w-4 h-4 text-rose-600 shrink-0" />
+          <span>⚡ 10-Min Revise</span>
         </button>
 
         <button
           onClick={() => setActiveTab('questions')}
-          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
+          className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl transition-all text-center min-h-[42px] ${
             activeTab === 'questions'
               ? 'bg-white text-indigo-900 shadow-xs'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          <HelpCircle className="w-4 h-4 text-indigo-600" />
-          ❓ Question Bank ({chapter.questions.length})
+          <HelpCircle className="w-4 h-4 text-indigo-600 shrink-0" />
+          <span>❓ Q&amp;A ({chapter.questions.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('quiz')}
-          className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
+          className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl transition-all text-center min-h-[42px] ${
             activeTab === 'quiz'
               ? 'bg-white text-emerald-900 shadow-xs'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
-          <Award className="w-4 h-4 text-emerald-600" />
-          🎯 Chapter Quiz
+          <Award className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>🎯 Quiz ({mcqQuestions.length})</span>
         </button>
       </div>
 
@@ -268,11 +302,11 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
       {/* ========================================================= */}
       {activeTab === 'notes' && (
         <div className="space-y-6">
-          {/* Notes Sub-tabs Switcher */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-semibold text-slate-600">
+          {/* Notes Sub-tabs Switcher - Responsive flex-wrap */}
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pb-1 text-xs font-semibold text-slate-600">
             <button
               onClick={() => setNotesSubTab('short')}
-              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-xl transition-all min-h-[34px] ${
                 notesSubTab === 'short'
                   ? 'bg-slate-900 text-white shadow-xs'
                   : 'bg-white hover:bg-slate-50 border border-slate-200'
@@ -282,7 +316,7 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
             </button>
             <button
               onClick={() => setNotesSubTab('detailed')}
-              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-xl transition-all min-h-[34px] ${
                 notesSubTab === 'detailed'
                   ? 'bg-slate-900 text-white shadow-xs'
                   : 'bg-white hover:bg-slate-50 border border-slate-200'
@@ -292,7 +326,7 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
             </button>
             <button
               onClick={() => setNotesSubTab('concepts')}
-              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-xl transition-all min-h-[34px] ${
                 notesSubTab === 'concepts'
                   ? 'bg-slate-900 text-white shadow-xs'
                   : 'bg-white hover:bg-slate-50 border border-slate-200'
@@ -302,7 +336,7 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
             </button>
             <button
               onClick={() => setNotesSubTab('dates')}
-              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-xl transition-all min-h-[34px] ${
                 notesSubTab === 'dates'
                   ? 'bg-slate-900 text-white shadow-xs'
                   : 'bg-white hover:bg-slate-50 border border-slate-200'
@@ -313,7 +347,7 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
             {chapter.importantPeople.length > 0 && (
               <button
                 onClick={() => setNotesSubTab('people')}
-                className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-xl transition-all min-h-[34px] ${
                   notesSubTab === 'people'
                     ? 'bg-slate-900 text-white shadow-xs'
                     : 'bg-white hover:bg-slate-50 border border-slate-200'
@@ -324,7 +358,7 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
             )}
             <button
               onClick={() => setNotesSubTab('definitions')}
-              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-xl transition-all min-h-[34px] ${
                 notesSubTab === 'definitions'
                   ? 'bg-slate-900 text-white shadow-xs'
                   : 'bg-white hover:bg-slate-50 border border-slate-200'
@@ -335,7 +369,7 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
             {chapter.importantFigures.length > 0 && (
               <button
                 onClick={() => setNotesSubTab('figures')}
-                className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-xl transition-all min-h-[34px] ${
                   notesSubTab === 'figures'
                     ? 'bg-slate-900 text-white shadow-xs'
                     : 'bg-white hover:bg-slate-50 border border-slate-200'
@@ -941,7 +975,7 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* TAB 4: INTERACTIVE CHAPTER QUIZ */}
+      {/* TAB 4: INTERACTIVE CHAPTER QUIZ (ONE-BY-ONE SUBMISSION) */}
       {/* ========================================================= */}
       {activeTab === 'quiz' && (
         <div className="space-y-6">
@@ -950,149 +984,447 @@ export const ChapterView: React.FC<ChapterViewProps> = ({
               MCQs for this chapter are currently in the Question Bank section.
             </div>
           ) : (
-            <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+            <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-8 shadow-xs space-y-6">
               {/* Quiz Banner */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900 font-heading">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 text-[10px] font-bold uppercase tracking-wider">
+                      Interactive Quiz
+                    </span>
+                    <span className="text-xs text-slate-400 font-semibold">
+                      One-by-One Submission
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 font-heading mt-1">
                     {chapter.title} Quiz
                   </h3>
                   <p className="text-xs text-slate-500">
-                    {mcqQuestions.length} Multiple Choice Questions • Test your mastery
+                    {mcqQuestions.length} Questions • Submit each question one by one for instant feedback
                   </p>
                 </div>
 
-                {quizSubmitted && (
-                  <button
-                    onClick={handleResetQuiz}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    Try Again
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  {(Object.keys(submittedQuestions).length > 0 || quizFinished) && (
+                    <button
+                      onClick={handleResetQuiz}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                      title="Reset and start over"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Retake Quiz</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {/* Questions List */}
-              <div className="space-y-6">
-                {mcqQuestions.map((q, qIdx) => {
-                  const selectedOpt = quizAnswers[qIdx];
-                  const isCorrect = selectedOpt === q.correctOptionIndex;
+              {/* Question Step Selector and Progress Bar */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-600">
+                  <span>
+                    Question {currentQuizIndex + 1} of {mcqQuestions.length}
+                  </span>
+                  <span>
+                    {Object.keys(submittedQuestions).length} / {mcqQuestions.length} Submitted
+                  </span>
+                </div>
+
+                {/* Progress bar */}
+                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div
+                    className="bg-blue-600 h-full transition-all duration-300 rounded-full"
+                    style={{
+                      width: `${(Object.keys(submittedQuestions).length / mcqQuestions.length) * 100}%`,
+                    }}
+                  />
+                </div>
+
+                {/* Question selector tabs */}
+                <div className="flex items-center gap-1.5 sm:gap-2 pt-1 overflow-x-auto pb-1">
+                  {mcqQuestions.map((q, idx) => {
+                    const isCurrent = currentQuizIndex === idx && !quizFinished;
+                    const isSub = submittedQuestions[idx];
+                    const isCorrect = isSub && quizAnswers[idx] === q.correctOptionIndex;
+                    const isSelected = quizAnswers[idx] !== undefined;
+
+                    let btnClass = 'bg-slate-100 text-slate-600 hover:bg-slate-200 border-slate-200';
+                    if (isSub) {
+                      if (isCorrect) {
+                        btnClass = 'bg-emerald-100 text-emerald-800 border-emerald-400 font-bold';
+                      } else {
+                        btnClass = 'bg-rose-100 text-rose-800 border-rose-400 font-bold';
+                      }
+                    } else if (isSelected) {
+                      btnClass = 'bg-amber-100 text-amber-800 border-amber-300 font-bold';
+                    }
+
+                    return (
+                      <button
+                        key={q.id}
+                        onClick={() => {
+                          setCurrentQuizIndex(idx);
+                          setQuizFinished(false);
+                          setShowFullReview(false);
+                        }}
+                        className={`flex items-center justify-center min-w-[36px] sm:min-w-[40px] h-9 px-2 rounded-xl text-xs font-bold border transition-all ${btnClass} ${
+                          isCurrent ? 'ring-2 ring-blue-500 ring-offset-2 scale-105 shadow-xs' : ''
+                        }`}
+                        title={`Go to Question ${idx + 1}`}
+                      >
+                        <span className="text-[11px]">Q{idx + 1}</span>
+                        {isSub && (
+                          <span className="ml-1 text-[10px]">
+                            {isCorrect ? '✓' : '✕'}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+
+                  {Object.keys(submittedQuestions).length === mcqQuestions.length && !quizFinished && (
+                    <button
+                      onClick={handleFinishQuiz}
+                      className="ml-auto px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors shrink-0 shadow-sm"
+                    >
+                      View Final Score 🏆
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* VIEW 1: FINAL SCORECARD & SUMMARY */}
+              {quizFinished && !showFullReview ? (
+                <div className="p-6 sm:p-10 rounded-2xl bg-gradient-to-br from-emerald-50 via-teal-50 to-blue-50 border border-emerald-200 text-center space-y-5 animate-in fade-in duration-300">
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto text-2xl shadow-sm">
+                    <Trophy className="w-8 h-8 text-emerald-600" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <h4 className="text-2xl font-black text-slate-900 font-heading">
+                      Quiz Completed!
+                    </h4>
+                    <p className="text-xs sm:text-sm text-slate-600">
+                      All {mcqQuestions.length} questions submitted and graded.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-white/80 border border-emerald-200 inline-block px-8 shadow-xs">
+                    <div className="text-xs uppercase font-extrabold tracking-wider text-slate-500">
+                      Final Score
+                    </div>
+                    <div className="text-4xl font-black text-emerald-700 font-heading">
+                      {
+                        mcqQuestions.filter(
+                          (q, idx) => quizAnswers[idx] === q.correctOptionIndex
+                        ).length
+                      }{' '}
+                      / {mcqQuestions.length}
+                    </div>
+                    <div className="text-xs font-bold text-slate-600 mt-0.5">
+                      {Math.round(
+                        (mcqQuestions.filter(
+                          (q, idx) => quizAnswers[idx] === q.correctOptionIndex
+                        ).length /
+                          mcqQuestions.length) *
+                          100
+                      )}
+                      % Accuracy
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                    <button
+                      onClick={() => setShowFullReview(true)}
+                      className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition-colors inline-flex items-center gap-2"
+                    >
+                      <ListOrdered className="w-4 h-4" />
+                      <span>Review All 5 Questions</span>
+                    </button>
+                    <button
+                      onClick={handleResetQuiz}
+                      className="px-5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs inline-flex items-center gap-2"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      <span>Retake Quiz</span>
+                    </button>
+                  </div>
+                </div>
+              ) : showFullReview ? (
+                /* VIEW 2: FULL REVIEW LIST OF ALL 5 QUESTIONS */
+                <div className="space-y-5 animate-in fade-in duration-300">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h4 className="text-base font-bold text-slate-900">
+                      Full Quiz Review ({mcqQuestions.length} Questions)
+                    </h4>
+                    <button
+                      onClick={() => setShowFullReview(false)}
+                      className="text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors"
+                    >
+                      ← Back to Score Summary
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {mcqQuestions.map((q, qIdx) => {
+                      const selectedOpt = quizAnswers[qIdx];
+                      const isCorrect = selectedOpt === q.correctOptionIndex;
+
+                      return (
+                        <div
+                          key={q.id}
+                          className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3"
+                        >
+                          <div className="flex items-center justify-between text-xs font-bold">
+                            <span className="text-slate-500">
+                              Question {qIdx + 1} of {mcqQuestions.length}
+                            </span>
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                                isCorrect
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : 'bg-rose-100 text-rose-800'
+                              }`}
+                            >
+                              {isCorrect ? '✓ Correct (+1)' : '✕ Incorrect (0)'}
+                            </span>
+                          </div>
+
+                          <p className="text-sm font-bold text-slate-900">
+                            {q.question}
+                          </p>
+
+                          <div className="space-y-1.5">
+                            {q.options?.map((opt, oIdx) => {
+                              const isOptionSelected = selectedOpt === oIdx;
+                              const isTargetCorrect = oIdx === q.correctOptionIndex;
+                              let optClass = 'bg-white border-slate-200 text-slate-700';
+
+                              if (isTargetCorrect) {
+                                optClass = 'bg-emerald-50 border-emerald-500 text-emerald-900 font-bold';
+                              } else if (isOptionSelected && !isCorrect) {
+                                optClass = 'bg-rose-50 border-rose-300 text-rose-800 font-semibold';
+                              }
+
+                              return (
+                                <div
+                                  key={oIdx}
+                                  className={`p-2.5 rounded-xl border text-xs flex items-center justify-between ${optClass}`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold flex items-center justify-center shrink-0">
+                                      {String.fromCharCode(65 + oIdx)}
+                                    </span>
+                                    <span>{opt}</span>
+                                  </div>
+                                  {isTargetCorrect && (
+                                    <span className="text-emerald-700 text-[11px] font-bold">
+                                      ✓ Correct
+                                    </span>
+                                  )}
+                                  {isOptionSelected && !isCorrect && (
+                                    <span className="text-rose-700 text-[11px] font-bold">
+                                      ✕ Your Choice
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          <div className="pt-2 text-xs text-slate-600 border-t border-slate-200">
+                            <strong>Explanation:</strong> {q.explanation || q.answer}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                /* VIEW 3: ACTIVE ONE-BY-ONE QUESTION CARD */
+                (() => {
+                  const currentQ = mcqQuestions[currentQuizIndex];
+                  if (!currentQ) return null;
+                  const isSubmitted = submittedQuestions[currentQuizIndex];
+                  const selectedOpt = quizAnswers[currentQuizIndex];
+                  const isCorrect = isSubmitted && selectedOpt === currentQ.correctOptionIndex;
 
                   return (
-                    <div
-                      key={q.id}
-                      className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3"
-                    >
-                      <div className="text-xs font-bold text-slate-400">
-                        Question {qIdx + 1} of {mcqQuestions.length}
+                    <div className="p-5 sm:p-7 rounded-2xl bg-slate-50 border border-slate-200 space-y-5 animate-in fade-in duration-200">
+                      {/* Question Header */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-lg bg-blue-600 text-white text-xs font-black">
+                            Q{currentQuizIndex + 1}
+                          </span>
+                          <span className="text-xs font-semibold text-slate-500">
+                            1 Mark
+                          </span>
+                        </div>
+
+                        {isSubmitted ? (
+                          <div
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                              isCorrect
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                : 'bg-rose-100 text-rose-800 border border-rose-300'
+                            }`}
+                          >
+                            {isCorrect ? (
+                              <>
+                                <Check className="w-3.5 h-3.5" />
+                                <span>Correct Answer (+1 Mark)</span>
+                              </>
+                            ) : (
+                              <>
+                                <X className="w-3.5 h-3.5" />
+                                <span>Incorrect (0 Marks)</span>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-xs font-semibold text-slate-400">
+                            Select an option and click Submit Answer
+                          </div>
+                        )}
                       </div>
 
-                      <p className="text-sm font-bold text-slate-900">
-                        {q.question}
+                      {/* Question Text */}
+                      <p className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
+                        {currentQ.question}
                       </p>
 
                       {/* Options */}
-                      <div className="space-y-2">
-                        {q.options?.map((opt, oIdx) => {
+                      <div className="space-y-2.5">
+                        {currentQ.options?.map((opt, oIdx) => {
                           const isOptionSelected = selectedOpt === oIdx;
                           let btnStyle =
-                            'bg-white border-slate-200 text-slate-700 hover:bg-slate-100';
+                            'bg-white border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300';
 
-                          if (quizSubmitted) {
-                            if (oIdx === q.correctOptionIndex) {
-                              btnStyle = 'bg-emerald-50 border-emerald-400 text-emerald-900 font-bold';
+                          if (isSubmitted) {
+                            if (oIdx === currentQ.correctOptionIndex) {
+                              btnStyle =
+                                'bg-emerald-50 border-emerald-500 text-emerald-900 font-bold ring-2 ring-emerald-400/40';
                             } else if (isOptionSelected && !isCorrect) {
-                              btnStyle = 'bg-rose-50 border-rose-300 text-rose-800 font-semibold';
+                              btnStyle =
+                                'bg-rose-50 border-rose-400 text-rose-900 font-semibold ring-1 ring-rose-300';
+                            } else {
+                              btnStyle = 'bg-white/60 border-slate-200 text-slate-400 opacity-60';
                             }
                           } else if (isOptionSelected) {
-                            btnStyle = 'bg-amber-50 border-amber-500 text-amber-900 font-bold';
+                            btnStyle =
+                              'bg-blue-50 border-blue-500 text-blue-900 font-bold ring-2 ring-blue-400/40 shadow-xs';
                           }
 
                           return (
                             <button
                               key={oIdx}
-                              onClick={() => handleSelectQuizOption(qIdx, oIdx)}
-                              className={`w-full text-left p-3 rounded-xl border text-xs transition-all flex items-center justify-between ${btnStyle}`}
+                              disabled={isSubmitted}
+                              onClick={() => handleSelectQuizOption(oIdx)}
+                              className={`w-full text-left p-3.5 rounded-xl border text-xs sm:text-sm transition-all flex items-center justify-between gap-3 ${btnStyle} ${
+                                !isSubmitted ? 'cursor-pointer' : 'cursor-default'
+                              }`}
                             >
-                              <div className="flex items-center gap-2.5">
-                                <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold flex items-center justify-center shrink-0">
+                              <div className="flex items-center gap-3">
+                                <span
+                                  className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0 ${
+                                    isSubmitted && oIdx === currentQ.correctOptionIndex
+                                      ? 'bg-emerald-600 text-white'
+                                      : isSubmitted && isOptionSelected && !isCorrect
+                                      ? 'bg-rose-600 text-white'
+                                      : isOptionSelected
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-slate-200 text-slate-700'
+                                  }`}
+                                >
                                   {String.fromCharCode(65 + oIdx)}
                                 </span>
-                                <span>{opt}</span>
+                                <span className="leading-snug">{opt}</span>
                               </div>
 
-                              {quizSubmitted && oIdx === q.correctOptionIndex && (
-                                <span className="text-emerald-700 text-xs font-bold">✓ Correct</span>
+                              {isSubmitted && oIdx === currentQ.correctOptionIndex && (
+                                <span className="inline-flex items-center gap-1 text-emerald-700 text-xs font-bold shrink-0">
+                                  <Check className="w-4 h-4" /> Correct Answer
+                                </span>
+                              )}
+                              {isSubmitted && isOptionSelected && !isCorrect && (
+                                <span className="inline-flex items-center gap-1 text-rose-700 text-xs font-bold shrink-0">
+                                  <X className="w-4 h-4" /> Your Selection
+                                </span>
                               )}
                             </button>
                           );
                         })}
                       </div>
 
-                      {/* Explanation if submitted */}
-                      {quizSubmitted && (
-                        <div className="pt-2 text-xs text-slate-600 border-t border-slate-200">
-                          <strong>Explanation:</strong> {q.explanation || q.answer}
+                      {/* Instant Explanation Box (Revealed upon submit) */}
+                      {isSubmitted && (
+                        <div className="p-4 rounded-xl bg-blue-50/80 border border-blue-200 text-xs sm:text-sm text-slate-800 space-y-1 animate-in fade-in duration-200">
+                          <div className="font-bold text-blue-900 flex items-center gap-1.5">
+                            <Sparkles className="w-4 h-4 text-blue-600" />
+                            <span>Detailed NCERT Explanation:</span>
+                          </div>
+                          <p className="leading-relaxed text-slate-700">
+                            {currentQ.explanation || currentQ.answer}
+                          </p>
                         </div>
                       )}
+
+                      {/* Navigation & Action Controls for this question */}
+                      <div className="pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                        <button
+                          onClick={handlePreviousQuestion}
+                          disabled={currentQuizIndex === 0}
+                          className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                          <span>Previous</span>
+                        </button>
+
+                        <div className="flex items-center gap-2">
+                          {!isSubmitted ? (
+                            <button
+                              onClick={handleSubmitCurrentQuestion}
+                              disabled={selectedOpt === undefined}
+                              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white text-xs font-bold shadow-md transition-all flex items-center gap-2"
+                            >
+                              <span>Submit Answer</span>
+                              <Check className="w-4 h-4" />
+                            </button>
+                          ) : currentQuizIndex < mcqQuestions.length - 1 ? (
+                            <button
+                              onClick={handleNextQuestion}
+                              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md transition-all flex items-center gap-2"
+                            >
+                              <span>Next Question</span>
+                              <ArrowRight className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={handleFinishQuiz}
+                              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-all flex items-center gap-2"
+                            >
+                              <span>Finish Quiz &amp; View Results 🏆</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   );
-                })}
-              </div>
-
-              {/* Submit Quiz Action */}
-              {!quizSubmitted ? (
-                <div className="pt-4 border-t border-slate-100 flex justify-end">
-                  <button
-                    onClick={handleQuizSubmit}
-                    disabled={Object.keys(quizAnswers).length === 0}
-                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-xs font-bold shadow-md transition-colors"
-                  >
-                    Submit Quiz &amp; Calculate Score
-                  </button>
-                </div>
-              ) : (
-                /* Score Card */
-                <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 text-center space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto text-xl font-bold">
-                    🎯
-                  </div>
-                  <h4 className="text-xl font-extrabold text-slate-900 font-heading">
-                    Quiz Completed!
-                  </h4>
-                  <div className="text-3xl font-black text-emerald-700 font-heading">
-                    {
-                      mcqQuestions.filter(
-                        (q, idx) => quizAnswers[idx] === q.correctOptionIndex
-                      ).length
-                    }{' '}
-                    / {mcqQuestions.length}
-                  </div>
-                  <p className="text-xs text-slate-600">
-                    Your score has been saved to your student progress record.
-                  </p>
-                  <button
-                    onClick={handleResetQuiz}
-                    className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
-                  >
-                    Try Again
-                  </button>
-                </div>
+                })()
               )}
             </div>
           )}
         </div>
       )}
 
-      {/* Bottom Backspace & Return Bar */}
+      {/* Bottom Back & Return Bar */}
       <div className="pt-6 border-t border-slate-700/40 flex flex-wrap items-center justify-between gap-3 no-print">
         <button
           onClick={onBack}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-md transition-all"
         >
           <span className="font-mono text-sm leading-none font-bold">⌫</span>
-          <span>Backspace (Previous Screen)</span>
+          <span>Back to Previous Screen</span>
           <kbd className="hidden sm:inline-block text-[10px] px-1.5 py-0.5 bg-blue-800/80 rounded font-mono">⌫</kbd>
         </button>
 

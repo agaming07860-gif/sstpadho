@@ -121,22 +121,23 @@ export const PopularHighYieldFolder: React.FC<PopularHighYieldFolderProps> = ({
         }`}
       >
         {/* Top Folder Tab (Skeuomorphic Folder Ear) */}
-        <div className="flex items-center justify-between px-6 pt-4 sm:px-8 sm:pt-6">
+        <div className="flex items-center justify-between px-3.5 pt-3 sm:px-8 sm:pt-6">
           <div className="flex items-center gap-2">
             {/* Folder Tab Shape */}
             <div
-              className={`flex items-center gap-2 px-4 py-1.5 rounded-t-xl text-xs font-bold font-mono tracking-wider uppercase border-t border-x transition-colors ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 rounded-t-xl text-[10px] sm:text-xs font-bold font-mono tracking-wider uppercase border-t border-x transition-colors ${
                 isOpen
                   ? 'bg-blue-600 text-white border-blue-400 shadow-md shadow-blue-600/40'
                   : 'bg-[#082245] text-sky-300 border-sky-700/60 hover:bg-[#0c2e5a]'
               }`}
             >
               {isOpen ? (
-                <FolderOpen className="w-4 h-4 text-white" />
+                <FolderOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
               ) : (
-                <Folder className="w-4 h-4 text-sky-400" />
+                <Folder className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400" />
               )}
-              <span>DOSSIER • HIGH-YIELD &amp; POPULAR</span>
+              <span className="hidden xs:inline">DOSSIER • HIGH-YIELD &amp; POPULAR</span>
+              <span className="xs:hidden">HIGH-YIELD DOSSIER</span>
             </div>
 
             <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-950/60 text-amber-300 border border-amber-800/40">
@@ -149,7 +150,7 @@ export const PopularHighYieldFolder: React.FC<PopularHighYieldFolderProps> = ({
           {!standalone && (
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all min-h-[34px] ${
                 isOpen
                   ? 'bg-[#0b284d] text-sky-200 hover:bg-[#0f3463] border border-sky-700/50'
                   : 'bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30'
@@ -176,7 +177,7 @@ export const PopularHighYieldFolder: React.FC<PopularHighYieldFolderProps> = ({
           onClick={() => {
             if (!standalone) setIsOpen(!isOpen);
           }}
-          className={`px-6 pb-6 pt-3 sm:px-8 sm:pb-7 cursor-pointer select-none transition-colors ${
+          className={`px-3.5 pb-4 pt-2 sm:px-8 sm:pb-7 cursor-pointer select-none transition-colors ${
             isOpen ? '' : 'hover:bg-white/[0.02]'
           }`}
         >
@@ -444,7 +445,7 @@ export const PopularHighYieldFolder: React.FC<PopularHighYieldFolderProps> = ({
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {filteredChapters.map((ch, idx) => {
                       const formattedNum = String(ch.chapterNumber || idx + 1).padStart(2, '0');
                       const weightage = getWeightageTag(ch);
@@ -455,7 +456,7 @@ export const PopularHighYieldFolder: React.FC<PopularHighYieldFolderProps> = ({
                       return (
                         <div
                           key={ch.id}
-                          className="bg-[#061a33] rounded-2xl border border-sky-900/60 hover:border-sky-500/80 transition-all duration-300 p-6 flex flex-col justify-between group shadow-lg hover:shadow-2xl hover:shadow-sky-950/80 relative"
+                          className="bg-[#061a33] rounded-2xl border border-sky-900/60 hover:border-sky-500/80 transition-all duration-300 p-4 sm:p-6 flex flex-col justify-between group shadow-lg hover:shadow-2xl hover:shadow-sky-950/80 relative"
                         >
                           <div>
                             {/* Card Top: Number badge, Class, Read Time, and Done Checkbox */}
@@ -480,14 +481,14 @@ export const PopularHighYieldFolder: React.FC<PopularHighYieldFolderProps> = ({
                                     e.stopPropagation();
                                     toggleChapterCompleted(ch.id);
                                   }}
-                                  className={`p-1.5 rounded-lg transition-all ${
+                                  className={`p-2 rounded-lg transition-all min-h-[34px] min-w-[34px] flex items-center justify-center ${
                                     completed
                                       ? 'bg-emerald-950/90 text-emerald-400 border border-emerald-700/60'
                                       : 'bg-[#092244] text-sky-300/50 hover:text-white border border-sky-800/40'
                                   }`}
                                   title={completed ? 'Completed (Click to unmark)' : 'Mark completed'}
                                 >
-                                  <Check className="w-3 h-3" />
+                                  <Check className="w-3.5 h-3.5" />
                                 </button>
                               </div>
                             </div>
@@ -543,37 +544,37 @@ export const PopularHighYieldFolder: React.FC<PopularHighYieldFolderProps> = ({
                               Open study chapter →
                             </div>
 
-                            <div className="grid grid-cols-4 gap-1.5 pt-0.5">
+                            <div className="grid grid-cols-4 gap-1 sm:gap-1.5 pt-0.5">
                               <button
                                 onClick={() => onSelectChapter(ch, 'notes')}
-                                className="flex items-center justify-center gap-1 py-1.5 rounded-lg text-[11px] font-semibold bg-[#092244] text-sky-200 hover:bg-blue-600 hover:text-white transition-colors border border-sky-800/40"
+                                className="flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-[#092244] text-sky-200 hover:bg-blue-600 hover:text-white transition-colors border border-sky-800/40 min-h-[36px]"
                                 title="Comprehensive Notes"
                               >
-                                <BookOpen className="w-3 h-3" />
+                                <BookOpen className="w-3 h-3 shrink-0" />
                                 <span>Notes</span>
                               </button>
                               <button
                                 onClick={() => onSelectChapter(ch, 'revision')}
-                                className="flex items-center justify-center gap-1 py-1.5 rounded-lg text-[11px] font-semibold bg-[#092244] text-amber-300 hover:bg-amber-600 hover:text-white transition-colors border border-sky-800/40"
+                                className="flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-[#092244] text-amber-300 hover:bg-amber-600 hover:text-white transition-colors border border-sky-800/40 min-h-[36px]"
                                 title="10-Min Revision Mode"
                               >
-                                <Zap className="w-3 h-3" />
+                                <Zap className="w-3 h-3 shrink-0" />
                                 <span>10-Min</span>
                               </button>
                               <button
                                 onClick={() => onSelectChapter(ch, 'questions')}
-                                className="flex items-center justify-center gap-1 py-1.5 rounded-lg text-[11px] font-semibold bg-[#092244] text-sky-200 hover:bg-blue-600 hover:text-white transition-colors border border-sky-800/40"
+                                className="flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-[#092244] text-sky-200 hover:bg-blue-600 hover:text-white transition-colors border border-sky-800/40 min-h-[36px]"
                                 title="NCERT Questions & PYQs"
                               >
-                                <HelpCircle className="w-3 h-3" />
+                                <HelpCircle className="w-3 h-3 shrink-0" />
                                 <span>Q&amp;A</span>
                               </button>
                               <button
                                 onClick={() => onSelectChapter(ch, 'quiz')}
-                                className="flex items-center justify-center gap-1 py-1.5 rounded-lg text-[11px] font-semibold bg-[#092244] text-emerald-300 hover:bg-emerald-600 hover:text-white transition-colors border border-sky-800/40"
+                                className="flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] sm:text-[11px] font-semibold bg-[#092244] text-emerald-300 hover:bg-emerald-600 hover:text-white transition-colors border border-sky-800/40 min-h-[36px]"
                                 title="Chapter MCQ Quiz"
                               >
-                                <Award className="w-3 h-3" />
+                                <Award className="w-3 h-3 shrink-0" />
                                 <span>Quiz</span>
                               </button>
                             </div>

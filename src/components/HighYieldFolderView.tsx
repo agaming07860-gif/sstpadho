@@ -30,13 +30,13 @@ export const HighYieldFolderView: React.FC<HighYieldFolderViewProps> = ({
       <div className="flex items-center justify-between gap-4 pt-2">
         <div className="flex items-center gap-2">
           <button
-            id="high-yield-backspace-btn"
+            id="high-yield-back-btn"
             onClick={onBack}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold border border-blue-400/40 shadow-xs transition-colors group"
             title="Go back (Backspace key)"
           >
             <span className="font-mono text-sm leading-none font-bold text-sky-200 group-hover:text-white">⌫</span>
-            <span>Backspace</span>
+            <span>Back</span>
             <kbd className="hidden sm:inline-block text-[9px] px-1 py-0.2 bg-blue-800/80 rounded font-mono border border-blue-400/30">⌫</kbd>
           </button>
 
@@ -50,6 +50,7 @@ export const HighYieldFolderView: React.FC<HighYieldFolderViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2 text-xs font-mono text-sky-300/60">
+          <img src="/app-logo.png" alt="" className="w-3.5 h-3.5 object-contain" />
           <span>SSTPadho</span>
           <span>/</span>
           <span className="text-sky-300 font-bold">High-Yield Dossier</span>
@@ -88,14 +89,14 @@ export const HighYieldFolderView: React.FC<HighYieldFolderViewProps> = ({
         onNavigateClass={onNavigateClass}
       />
 
-      {/* Bottom Backspace Action */}
+      {/* Bottom Back Action */}
       <div className="pt-6 border-t border-sky-900/60 flex items-center justify-center">
         <button
           onClick={onBack}
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-lg transition-all border border-blue-400/40"
         >
           <span className="font-mono text-sm font-bold">⌫</span>
-          <span>Backspace to Previous Screen</span>
+          <span>Back to Previous Screen</span>
           <kbd className="text-[10px] px-1.5 py-0.5 bg-blue-800/80 rounded font-mono">⌫</kbd>
         </button>
       </div>

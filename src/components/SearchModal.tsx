@@ -105,21 +105,21 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSel
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 md:p-20 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-2 sm:p-6 md:p-20 pt-4 sm:pt-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-150">
       <div
-        className="w-full max-w-2xl bg-[#071d37] rounded-2xl shadow-2xl border border-sky-900/60 overflow-hidden flex flex-col max-h-[85vh] text-slate-100"
+        className="w-full max-w-2xl bg-[#071d37] rounded-2xl shadow-2xl border border-sky-900/60 overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[85vh] text-slate-100"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
-        <div className="p-4 border-b border-sky-900/60 flex items-center gap-3 bg-[#051833]">
+        <div className="p-3.5 sm:p-4 border-b border-sky-900/60 flex items-center gap-2.5 sm:gap-3 bg-[#051833]">
           <Search className="w-5 h-5 text-sky-400 shrink-0" />
           <input
             id="global-search-input"
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search chapters, topics, dates (e.g. 'French Revolution', 'Regur Soil', '1789')..."
-            className="w-full bg-transparent border-0 text-white placeholder:text-sky-300/40 focus:outline-none text-base"
+            placeholder="Search chapters, topics, dates..."
+            className="w-full bg-transparent border-0 text-white placeholder:text-sky-300/40 focus:outline-none text-sm sm:text-base min-h-[38px]"
             autoFocus
           />
           {query && (
@@ -131,23 +131,24 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSel
             </button>
           )}
           <button
+            id="search-back-btn"
             onClick={onClose}
-            className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border border-blue-400/40 shadow-xs"
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors border border-blue-400/40 shadow-xs min-h-[34px]"
             title="Go back / close search (Backspace key)"
           >
             <span className="font-mono text-xs leading-none">⌫</span>
-            <span>Backspace</span>
+            <span>Back</span>
           </button>
           <button
             onClick={onClose}
-            className="px-2 py-1 text-xs font-semibold text-sky-300 bg-[#092244] hover:bg-[#0c2e5a] rounded-md transition-colors border border-sky-800/40"
+            className="hidden sm:inline-flex px-2 py-1.5 text-xs font-semibold text-sky-300 bg-[#092244] hover:bg-[#0c2e5a] rounded-md transition-colors border border-sky-800/40 min-h-[34px]"
           >
             ESC
           </button>
         </div>
 
         {/* Filter Pills */}
-        <div className="px-4 py-2.5 bg-[#051833] border-b border-sky-900/50 flex items-center gap-2 overflow-x-auto text-xs font-medium text-sky-200">
+        <div className="px-4 py-2.5 bg-[#051833] border-b border-sky-900/50 flex items-center gap-2 overflow-x-auto text-xs font-medium text-sky-200 no-scrollbar">
           <span className="text-sky-400/60 uppercase tracking-wider text-[10px] font-bold">Filter:</span>
           <button
             onClick={() => setSelectedSubject('all')}
@@ -217,36 +218,36 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSel
                   </div>
 
                   {/* Quick Action Buttons */}
-                  <div className="flex items-center gap-2 pt-1">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-1">
                     <button
                       onClick={() => {
                         onSelectChapter(chapter, 'notes');
                         onClose();
                       }}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 bg-[#09254c] text-sky-200 rounded-lg hover:bg-blue-600 hover:text-white transition-colors border border-sky-700/40"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 bg-[#09254c] text-sky-200 rounded-lg hover:bg-blue-600 hover:text-white transition-colors border border-sky-700/40 min-h-[32px]"
                     >
                       <BookOpen className="w-3.5 h-3.5" />
-                      Read Notes
+                      <span>Notes</span>
                     </button>
                     <button
                       onClick={() => {
                         onSelectChapter(chapter, 'revision');
                         onClose();
                       }}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 bg-[#09254c] text-rose-300 rounded-lg hover:bg-rose-600 hover:text-white transition-colors border border-rose-900/40"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 bg-[#09254c] text-rose-300 rounded-lg hover:bg-rose-600 hover:text-white transition-colors border border-rose-900/40 min-h-[32px]"
                     >
                       <Zap className="w-3.5 h-3.5" />
-                      10-Min Revision
+                      <span>10-Min</span>
                     </button>
                     <button
                       onClick={() => {
                         onSelectChapter(chapter, 'questions');
                         onClose();
                       }}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 bg-[#09254c] text-amber-300 rounded-lg hover:bg-amber-600 hover:text-white transition-colors border border-amber-900/40"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 bg-[#09254c] text-amber-300 rounded-lg hover:bg-amber-600 hover:text-white transition-colors border border-amber-900/40 min-h-[32px]"
                     >
                       <HelpCircle className="w-3.5 h-3.5" />
-                      Questions ({chapter.questions.length})
+                      <span>Questions ({chapter.questions.length})</span>
                     </button>
                   </div>
                 </div>

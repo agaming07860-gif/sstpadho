@@ -29,7 +29,7 @@ export const SUBJECTS: Record<SubjectKey, SubjectMeta> = {
   },
   civics: {
     key: 'civics',
-    label: 'Civics / Political Science',
+    label: 'Civics',
     bookTitle: 'Democratic Politics / Social & Political Life',
     colorName: 'indigo',
     badgeBg: 'bg-indigo-100 dark:bg-indigo-950/60',

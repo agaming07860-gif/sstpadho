@@ -13,6 +13,7 @@ import {
   FolderOpen,
   ChevronDown,
   ChevronUp,
+  GraduationCap,
 } from 'lucide-react';
 import { CLASS_LEVELS, CLASS_DETAILS, SUBJECTS } from '../data/subjects';
 import { CHAPTERS_DATA } from '../data/chaptersData';
@@ -62,50 +63,80 @@ export const ClassDashboard: React.FC<ClassDashboardProps> = ({
 
   return (
     <div className="space-y-10 pb-20 text-slate-100 max-w-7xl mx-auto">
-      {/* Top Class Switcher Bar with Backspace Button */}
-      <div className="flex items-center justify-between gap-3 flex-wrap pt-2">
-        {onBack && (
-          <button
-            id="class-dashboard-backspace-btn"
-            onClick={onBack}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 transition-all border border-blue-400/40 group shrink-0"
-            title="Go back (Backspace key)"
-          >
-            <span className="font-mono text-sm leading-none font-bold text-sky-200 group-hover:text-white">⌫</span>
-            <span>Backspace</span>
-            <kbd className="hidden sm:inline-block text-[9px] px-1 py-0.2 bg-blue-800/80 rounded font-mono border border-blue-400/30">⌫</kbd>
-          </button>
-        )}
+      {/* Top Class Switcher Bar with Back Button */}
+      <div className="space-y-2.5 pt-1 sm:pt-2">
+        {/* Row 1: Back Button + Active Class Indicator & Chapter Counter */}
+        <div className="flex items-center justify-between gap-2">
+          {onBack && (
+            <button
+              id="class-dashboard-back-btn"
+              onClick={onBack}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 transition-all border border-blue-400/40 group shrink-0 min-h-[38px] active:scale-95"
+              title="Go back (Backspace key)"
+              aria-label="Go back"
+            >
+              <span className="font-mono text-sm leading-none font-bold text-sky-200 group-hover:text-white">⌫</span>
+              <span>Back</span>
+              <kbd className="hidden sm:inline-block text-[9px] px-1 py-0.2 bg-blue-800/80 rounded font-mono border border-blue-400/30">⌫</kbd>
+            </button>
+          )}
 
-        <div className="flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap flex-1">
-          <span className="text-xs font-semibold text-sky-300/70 mr-2 uppercase tracking-wider hidden sm:inline">
-            Choose Class:
-          </span>
-          {CLASS_LEVELS.map((cls) => {
-            const isCurrent = cls === classLevel;
-            return (
-              <button
-                key={cls}
-                onClick={() => onNavigateClass(cls)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
-                  isCurrent
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 ring-2 ring-blue-400/40'
-                    : 'bg-[#08203e] text-sky-200/80 border border-sky-800/40 hover:bg-[#0d2e57] hover:text-white'
-                }`}
-              >
-                Class {cls}
-              </button>
-            );
-          })}
+          <div className="flex items-center gap-2">
+            <div className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-[#08203e] border border-sky-800/50 text-xs font-bold text-sky-200 flex items-center gap-1.5 shadow-xs">
+              <GraduationCap className="w-3.5 h-3.5 text-sky-400" />
+              <span>Class {classLevel} SST</span>
+            </div>
+            <span className="text-[11px] sm:text-xs text-sky-300/70 font-mono hidden xs:inline-block px-2 py-1 rounded-lg bg-sky-950/60 border border-sky-900/40">
+              {totalCount} Chapters
+            </span>
+          </div>
+        </div>
+
+        {/* Row 2: 7-Column Responsive Class Switcher (All 7 Classes visible without scrolling on all devices) */}
+        <div className="bg-[#051833]/90 backdrop-blur-md p-1 sm:p-1.5 rounded-2xl border border-sky-900/60 shadow-lg">
+          <div className="grid grid-cols-7 gap-1 sm:gap-1.5 w-full">
+            {CLASS_LEVELS.map((cls) => {
+              const isCurrent = cls === classLevel;
+              return (
+                <button
+                  key={cls}
+                  onClick={() => onNavigateClass(cls)}
+                  className={`py-1.5 sm:py-2 px-0.5 sm:px-2 rounded-xl text-center font-bold transition-all duration-200 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 min-h-[40px] ${
+                    isCurrent
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-600/40 ring-1 ring-blue-300'
+                      : 'bg-[#08203e]/70 text-sky-200/80 hover:bg-[#0c2a52] hover:text-white border border-sky-800/40'
+                  }`}
+                  title={`Switch to Class ${cls}`}
+                  aria-label={`Switch to Class ${cls}`}
+                >
+                  <span className="text-[9px] sm:text-xs text-sky-300/70 font-medium sm:font-bold leading-none">
+                    Class
+                  </span>
+                  <span className="text-xs sm:text-sm font-extrabold leading-none">{cls}</span>
+                  {cls === 10 && (
+                    <span className="hidden lg:inline-block text-[8px] px-1 py-0.2 rounded bg-amber-400 text-slate-950 font-black uppercase leading-none">
+                      Board
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Main Header matching the photo */}
       <div className="text-center max-w-3xl mx-auto pt-4 pb-2 space-y-3">
         <div className="inline-block">
-          <span className="text-xs font-bold tracking-[0.2em] text-sky-400 uppercase font-mono px-3 py-1 rounded-full bg-sky-950/60 border border-sky-800/40">
-            SSTPADHO • BY ARSHAD
-          </span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gradient-to-r from-sky-950/90 via-[#0a274e]/90 to-sky-950/90 border border-sky-600/40 shadow-sm">
+            <span className="font-heading font-extrabold text-xs text-white tracking-tight">
+              SST<span className="text-sky-400">Padho</span>
+            </span>
+            <span className="w-1 h-1 rounded-full bg-sky-400/60" />
+            <span className="text-xs font-medium text-sky-200/90">
+              Curated by <span className="text-white font-semibold">Arshad</span>
+            </span>
+          </div>
         </div>
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white font-heading">
@@ -131,27 +162,27 @@ export const ClassDashboard: React.FC<ClassDashboardProps> = ({
         </div>
 
         {/* High-Yield Dossier Folder Toggle */}
-        <div className="pt-2 flex items-center justify-center gap-3">
+        <div className="pt-2 flex items-center justify-center px-1">
           <button
             onClick={() => setFolderOpen(!folderOpen)}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-semibold transition-all border shadow-md ${
+            className={`inline-flex items-center justify-center flex-wrap gap-2 px-3 sm:px-4 py-2 rounded-2xl text-xs font-semibold transition-all border shadow-md max-w-full text-center ${
               folderOpen
                 ? 'bg-blue-600 text-white border-blue-400 ring-2 ring-blue-400/40'
                 : 'bg-gradient-to-r from-[#082245] to-[#061a35] hover:bg-[#0b2d5a] text-sky-200 border-sky-700/60 hover:border-sky-400'
             }`}
           >
             {folderOpen ? (
-              <FolderOpen className="w-4 h-4 text-amber-300" />
+              <FolderOpen className="w-4 h-4 text-amber-300 shrink-0" />
             ) : (
-              <Folder className="w-4 h-4 text-amber-400" />
+              <Folder className="w-4 h-4 text-amber-400 shrink-0" />
             )}
             <span>
-              {folderOpen ? 'Close' : 'Open'} Class {classLevel} High-Yield &amp; Popular Folder
+              {folderOpen ? 'Close' : 'Open'} Class {classLevel} High-Yield Folder
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-800/50 text-[11px] font-mono font-bold">
+            <span className="px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-800/50 text-[11px] font-mono font-bold shrink-0">
               {classPopularCount} High-Yield
             </span>
-            {folderOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            {folderOpen ? <ChevronUp className="w-3.5 h-3.5 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 shrink-0" />}
           </button>
         </div>
       </div>
@@ -169,16 +200,16 @@ export const ClassDashboard: React.FC<ClassDashboardProps> = ({
       )}
 
       {/* Centered Subject Filter Pills */}
-      <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2.5">
         <button
           onClick={() => setActiveSubjectTab('all')}
-          className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+          className={`px-4 sm:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
             activeSubjectTab === 'all'
               ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
               : 'bg-[#092244] text-sky-200/90 border border-sky-800/50 hover:border-sky-600 hover:bg-[#0c2a52]'
           }`}
         >
-          All
+          All Subjects
         </button>
 
         {subjectsList.map((sub) => {
@@ -190,7 +221,7 @@ export const ClassDashboard: React.FC<ClassDashboardProps> = ({
             <button
               key={sub.key}
               onClick={() => setActiveSubjectTab(sub.key)}
-              className={`px-4 sm:px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
                 isSelected
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
                   : 'bg-[#092244] text-sky-200/90 border border-sky-800/50 hover:border-sky-600 hover:bg-[#0c2a52]'
@@ -216,7 +247,7 @@ export const ClassDashboard: React.FC<ClassDashboardProps> = ({
           No chapters found for the selected subject in Class {classLevel}.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 pt-2">
           {filteredChapters.map((ch, idx) => {
             const formattedNum = String(ch.chapterNumber || idx + 1).padStart(2, '0');
             const subjectLabel = ch.subject.toUpperCase();
@@ -227,7 +258,7 @@ export const ClassDashboard: React.FC<ClassDashboardProps> = ({
               <div
                 key={ch.id}
                 onClick={() => onSelectChapter(ch)}
-                className="cursor-pointer rounded-2xl bg-[#071d37] border border-sky-900/50 hover:border-sky-500/80 transition-all duration-300 p-6 sm:p-7 flex flex-col justify-between group shadow-lg hover:shadow-2xl hover:shadow-sky-950/80 relative overflow-hidden"
+                className="cursor-pointer rounded-2xl bg-[#071d37] border border-sky-900/50 hover:border-sky-500/80 transition-all duration-300 p-4 sm:p-6 md:p-7 flex flex-col justify-between group shadow-lg hover:shadow-2xl hover:shadow-sky-950/80 relative overflow-hidden"
               >
                 <div>
                   {/* Top Row: 01 badge + Optional Completion Indicator */}
@@ -298,7 +329,7 @@ export const ClassDashboard: React.FC<ClassDashboardProps> = ({
         </div>
       )}
 
-      {/* Bottom Backspace Action */}
+      {/* Bottom Back Action */}
       {onBack && (
         <div className="pt-6 border-t border-sky-900/60 flex items-center justify-center gap-3">
           <button
@@ -306,7 +337,7 @@ export const ClassDashboard: React.FC<ClassDashboardProps> = ({
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition-all border border-blue-400/40"
           >
             <span className="font-mono text-sm font-bold">⌫</span>
-            <span>Backspace to Previous Screen</span>
+            <span>Back to Previous Screen</span>
             <kbd className="text-[10px] px-1.5 py-0.5 bg-blue-800/80 rounded font-mono">⌫</kbd>
           </button>
         </div>

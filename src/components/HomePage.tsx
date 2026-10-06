@@ -57,18 +57,26 @@ export const HomePage: React.FC<HomePageProps> = ({
         <div className="absolute -left-16 -bottom-16 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative max-w-3xl space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-950/80 border border-sky-800/50 text-sky-300 text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5 text-sky-400" />
-            <span>Curriculum Aligned • NCERT &amp; CBSE Syllabus • Classes 6 - 12</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-950/80 border border-sky-800/50 text-sky-300 text-xs font-semibold">
+              <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+              <span>Curriculum Aligned • NCERT &amp; CBSE Syllabus • Classes 6 - 12</span>
+            </div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-sky-950/90 via-[#0a274e]/90 to-sky-950/90 border border-sky-500/40 text-xs shadow-xs">
+              <span className="font-heading font-extrabold text-xs text-white tracking-tight">
+                SST<span className="text-sky-400">Padho</span>
+              </span>
+              <span className="w-1 h-1 rounded-full bg-sky-400/60" />
+              <span className="text-sky-200/90 font-medium text-xs">
+                Curated by <span className="text-white font-semibold">Arshad</span>
+              </span>
+            </div>
           </div>
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight font-heading">
             Your Complete Digital <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-blue-300 to-sky-200">
-              SSTPadho
-            </span>{' '}
-            <span className="inline-block text-xl sm:text-2xl md:text-3xl font-semibold text-amber-300 font-sans align-middle">
-              by Arshad
+              Social Science
             </span>
           </h1>
 
@@ -143,10 +151,44 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
         </div>
 
+        {/* Quick Responsive 7-Class Switcher Bar (All 7 classes visible on all devices) */}
+        <div className="bg-[#051833]/90 backdrop-blur-md p-1 sm:p-1.5 rounded-2xl border border-sky-900/60 shadow-lg">
+          <div className="grid grid-cols-7 gap-1 sm:gap-1.5 w-full text-center">
+            {CLASS_LEVELS.map((cls) => {
+              const isSelected = activeClass === cls;
+              return (
+                <button
+                  key={`pill-${cls}`}
+                  onClick={() => {
+                    setActiveClass(cls);
+                    onSelectClass(cls);
+                  }}
+                  className={`py-1.5 sm:py-2 px-0.5 sm:px-2 rounded-xl text-center font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 min-h-[40px] ${
+                    isSelected
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-600/40 ring-1 ring-blue-300'
+                      : 'bg-[#071d37] text-sky-200/80 hover:bg-[#0c2a52] hover:text-white border border-sky-900/60'
+                  }`}
+                  title={`Select Class ${cls}`}
+                  aria-label={`Select Class ${cls}`}
+                >
+                  <span className="text-[9px] sm:text-xs text-sky-300/70 font-medium sm:font-bold leading-none">Class</span>
+                  <span className="text-xs sm:text-sm font-extrabold leading-none">{cls}</span>
+                  {cls === 10 && (
+                    <span className="hidden lg:inline-block text-[8px] px-1 py-0.2 rounded bg-amber-400 text-slate-950 font-black uppercase leading-none">
+                      Board
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
-          {CLASS_LEVELS.map((cls) => {
+          {CLASS_LEVELS.map((cls, idx) => {
             const isSelected = activeClass === cls;
             const isBoardSpecial = cls === 10;
+            const isLast = idx === CLASS_LEVELS.length - 1;
             return (
               <button
                 key={cls}
@@ -154,7 +196,9 @@ export const HomePage: React.FC<HomePageProps> = ({
                   setActiveClass(cls);
                   onSelectClass(cls);
                 }}
-                className={`relative p-4 rounded-2xl text-left border transition-all flex flex-col justify-between group ${
+                className={`relative p-3.5 sm:p-4 rounded-2xl text-left border transition-all flex flex-col justify-between group min-h-[110px] ${
+                  isLast ? 'col-span-2 sm:col-span-1' : ''
+                } ${
                   isSelected
                     ? 'bg-blue-600 text-white border-blue-400 shadow-lg shadow-blue-600/30 -translate-y-1'
                     : 'bg-[#071d37] hover:bg-[#0c2a52] text-slate-100 border-sky-900/50 hover:border-sky-600'
@@ -172,7 +216,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   </span>
                 )}
                 <div>
-                  <div className="text-2xl font-black font-heading mb-1 text-white">
+                  <div className="text-xl sm:text-2xl font-black font-heading mb-0.5 sm:mb-1 text-white">
                     Class {cls}
                   </div>
                   <div
@@ -184,13 +228,13 @@ export const HomePage: React.FC<HomePageProps> = ({
                   </div>
                 </div>
                 <div
-                  className={`mt-4 text-[11px] font-bold inline-flex items-center gap-1 ${
+                  className={`mt-3 sm:mt-4 text-[11px] font-bold inline-flex items-center gap-1 ${
                     isSelected
                       ? 'text-white'
                       : 'text-sky-400 group-hover:translate-x-1 transition-transform'
                   }`}
                 >
-                  Enter Library <ArrowRight className="w-3 h-3" />
+                  Explore Chapters <ArrowRight className="w-3 h-3" />
                 </div>
               </button>
             );
@@ -205,7 +249,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             🏛️ Four Pillars of Social Science
           </h2>
           <p className="text-xs sm:text-sm text-sky-200/60">
-            Dedicated curricula and chapter libraries for Class {activeClass}
+            Dedicated curricula and chapters for Class {activeClass}
           </p>
         </div>
 
@@ -230,12 +274,12 @@ export const HomePage: React.FC<HomePageProps> = ({
                 className="p-5 rounded-2xl bg-[#071d37] border border-sky-900/50 hover:border-sky-500/70 transition-all cursor-pointer group flex flex-col justify-between shadow-lg"
               >
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-[#0b2b52] text-sky-300 border border-sky-800/40 flex items-center gap-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-[#0b2b52] text-sky-300 border border-sky-800/40 flex items-center gap-1.5 shrink-0 whitespace-nowrap">
                       {iconMap[key]}
                       <span>{sub.label}</span>
                     </span>
-                    <span className="text-xs font-semibold text-sky-300/50">
+                    <span className="text-xs font-semibold text-sky-300/60 shrink-0 whitespace-nowrap">
                       {count} Chapters
                     </span>
                   </div>

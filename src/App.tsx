@@ -1,4 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Home,
+  GraduationCap,
+  FolderOpen,
+  MapPin,
+  Search as SearchIcon,
+} from 'lucide-react';
 import { ProgressProvider, useProgress } from './context/ProgressContext';
 import { Navbar, ActiveView } from './components/Navbar';
 import { HomePage } from './components/HomePage';
@@ -131,7 +138,7 @@ function MainApp() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24 md:pb-8">
         {currentView === 'home' && (
           <HomePage
             onSelectClass={handleSelectClass}
@@ -167,7 +174,12 @@ function MainApp() {
 
         {currentView === 'question-bank' && <QuestionBankView onBack={handleGoBack} />}
 
-        {currentView === 'map-lab' && <MapLabView onBack={handleGoBack} />}
+        {currentView === 'map-lab' && (
+          <MapLabView
+            onBack={handleGoBack}
+            onOpenChapter={(chId) => handleSelectChapter(chId)}
+          />
+        )}
 
         {currentView === 'timeline' && <TimelineView onBack={handleGoBack} />}
 
@@ -205,6 +217,71 @@ function MainApp() {
 
       {/* Footer */}
       <Footer onSelectClass={handleSelectClass} onNavigate={handleNavigate} />
+
+      {/* Mobile Sticky Bottom Navigation Dock (Visible on screens under md) */}
+      <nav
+        id="mobile-bottom-dock"
+        aria-label="Mobile Bottom Navigation"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#031326]/95 backdrop-blur-lg border-t border-sky-900/60 safe-bottom px-2 py-1 shadow-2xl"
+      >
+        <div className="grid grid-cols-5 items-center">
+          <button
+            onClick={() => handleNavigate('home')}
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-colors ${
+              currentView === 'home'
+                ? 'text-sky-400 font-bold'
+                : 'text-sky-200/60 hover:text-white'
+            }`}
+          >
+            <Home className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Home</span>
+          </button>
+
+          <button
+            onClick={() => handleNavigate('class')}
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-colors ${
+              currentView === 'class'
+                ? 'text-sky-400 font-bold'
+                : 'text-sky-200/60 hover:text-white'
+            }`}
+          >
+            <GraduationCap className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Class {activeClass}</span>
+          </button>
+
+          <button
+            onClick={() => handleNavigate('high-yield')}
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-colors ${
+              currentView === 'high-yield'
+                ? 'text-sky-400 font-bold'
+                : 'text-sky-200/60 hover:text-white'
+            }`}
+          >
+            <FolderOpen className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">High-Yield</span>
+          </button>
+
+          <button
+            onClick={() => handleNavigate('map-lab')}
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-colors ${
+              currentView === 'map-lab'
+                ? 'text-teal-400 font-bold'
+                : 'text-sky-200/60 hover:text-white'
+            }`}
+          >
+            <MapPin className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Map Lab</span>
+          </button>
+
+          <button
+            onClick={() => setSearchModalOpen(true)}
+            className="flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-sky-200/60 hover:text-white transition-colors"
+          >
+            <SearchIcon className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Search</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }

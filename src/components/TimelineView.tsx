@@ -37,52 +37,53 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onBack }) => {
   return (
     <div className="space-y-8 pb-16">
       {/* Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-amber-900 via-orange-950 to-slate-900 text-white shadow-xl space-y-3 border border-amber-800/40">
+      <div className="p-4 sm:p-6 md:p-8 rounded-3xl bg-gradient-to-r from-amber-900 via-orange-950 to-slate-900 text-white shadow-xl space-y-3 border border-amber-800/40">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             {onBack && (
               <button
-                id="timeline-backspace-btn"
+                id="timeline-back-btn"
                 onClick={onBack}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md border border-amber-400/40 transition-all"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md border border-amber-400/40 transition-all min-h-[34px]"
                 title="Go back (Backspace key)"
               >
                 <span className="font-mono text-sm leading-none font-bold">⌫</span>
-                <span>Backspace</span>
+                <span>Back</span>
                 <kbd className="hidden sm:inline-block text-[9px] px-1 py-0.2 bg-amber-800/80 rounded font-mono border border-amber-400/30">⌫</kbd>
               </button>
             )}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30">
               <Clock className="w-3.5 h-3.5" />
-              Chronological Mastery
+              <span>Chronological Mastery</span>
             </div>
           </div>
 
           <button
             onClick={() => window.print()}
-            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-1.5 transition-colors no-print"
+            className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-1.5 transition-colors no-print min-h-[34px]"
           >
             <Printer className="w-3.5 h-3.5 text-amber-300" />
             <span className="hidden sm:inline">Print Timeline Sheet</span>
+            <span className="sm:hidden">Print</span>
           </button>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl font-extrabold font-heading text-white">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-heading text-white">
           ⏳ Interactive History Timeline
         </h1>
-        <p className="text-xs sm:text-sm text-amber-200 max-w-2xl leading-relaxed">
+        <p className="text-xs sm:text-sm text-amber-200/90 max-w-2xl leading-relaxed">
           Master the exact chronology of the Indian National Movement and World History. Click any year to explore
           what happened, the root cause, and long-term historical impact.
         </p>
       </div>
 
-      {/* Category Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold no-print">
+      {/* Category Filter Pills - Responsive wrap on tablet/laptop, smooth swipe on mobile */}
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 text-xs font-bold no-print no-scrollbar">
         {categories.map((cat) => (
           <button
             key={cat.id}
             onClick={() => setSelectedEra(cat.id)}
-            className={`px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
+            className={`px-3 sm:px-4 py-2 rounded-xl transition-all whitespace-nowrap min-h-[38px] ${
               selectedEra === cat.id
                 ? 'bg-amber-600 text-white shadow-xs'
                 : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200'
@@ -93,7 +94,36 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onBack }) => {
         ))}
       </div>
 
-      {/* 2-Column Layout: Visual Vertical Timeline + Active Event Inspector */}
+      {/* Mobile-Only Active Event Quick Inspector Banner (So mobile users don't have to scroll to bottom) */}
+      <div className="lg:hidden bg-white rounded-2xl border-2 border-amber-400 p-4 shadow-md space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-black font-heading text-amber-600">
+              {activeEvent.year}
+            </span>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+              Class {activeEvent.relatedClass}
+            </span>
+          </div>
+          <span className="text-[11px] font-medium text-slate-400">
+            Selected Milestone
+          </span>
+        </div>
+        <h3 className="text-sm font-bold text-slate-900">
+          {activeEvent.title}
+        </h3>
+        <p className="text-xs text-slate-600 leading-relaxed">
+          {activeEvent.description}
+        </p>
+        {activeEvent.significance && (
+          <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-slate-700">
+            <strong className="text-emerald-900 block text-[11px] mb-0.5">Exam Significance:</strong>
+            {activeEvent.significance}
+          </div>
+        )}
+      </div>
+
+      {/* 2-Column Layout: Visual Vertical Timeline + Active Event Inspector for Tablet & Laptop */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Vertical Timeline List */}
         <div className="lg:col-span-6 space-y-3 relative pl-6 before:absolute before:left-2.5 before:top-4 before:bottom-4 before:w-0.5 before:bg-slate-200">
@@ -103,10 +133,16 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onBack }) => {
             return (
               <div
                 key={evt.id}
-                onClick={() => setActiveEventId(evt.id)}
-                className={`relative p-4 rounded-2xl cursor-pointer transition-all border ${
+                onClick={() => {
+                  setActiveEventId(evt.id);
+                  // On mobile, smooth scroll to mobile inspector if tapped
+                  if (window.innerWidth < 1024) {
+                    window.scrollTo({ top: 180, behavior: 'smooth' });
+                  }
+                }}
+                className={`relative p-3.5 sm:p-4 rounded-2xl cursor-pointer transition-all border ${
                   isSelected
-                    ? 'bg-amber-50/80 border-amber-300 shadow-sm -translate-y-0.5'
+                    ? 'bg-amber-50/90 border-amber-400 shadow-sm -translate-y-0.5 ring-1 ring-amber-300'
                     : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-xs'
                 }`}
               >
@@ -143,8 +179,8 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onBack }) => {
           })}
         </div>
 
-        {/* Active Event Inspector Panel */}
-        <div className="lg:col-span-6">
+        {/* Desktop / Laptop Active Event Inspector Panel */}
+        <div className="hidden lg:block lg:col-span-6">
           <div className="sticky top-20 bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-5">
             <div className="flex items-center justify-between">
               <span className="text-2xl font-black font-heading text-amber-600">
@@ -188,7 +224,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* Bottom Backspace Action */}
+      {/* Bottom Back Action */}
       {onBack && (
         <div className="pt-6 border-t border-slate-700/40 flex items-center justify-center">
           <button
@@ -196,7 +232,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ onBack }) => {
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white shadow-lg transition-all border border-amber-400/40"
           >
             <span className="font-mono text-sm font-bold">⌫</span>
-            <span>Backspace to Previous Screen</span>
+            <span>Back to Previous Screen</span>
             <kbd className="text-[10px] px-1.5 py-0.5 bg-amber-800/80 rounded font-mono">⌫</kbd>
           </button>
         </div>

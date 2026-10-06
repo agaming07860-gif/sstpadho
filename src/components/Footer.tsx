@@ -17,22 +17,27 @@ export const Footer: React.FC<FooterProps> = ({ onSelectClass, onNavigate }) => 
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
               <div className="relative flex-shrink-0">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-b from-[#0c2f58] to-[#051830] border border-sky-400/40 flex items-center justify-center shadow-md shadow-sky-950/70">
-                  <Compass className="w-5 h-5 text-sky-400" />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center">
+                  <img
+                    src="/app-logo.png"
+                    alt="SST Educational Emblem"
+                    className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(56,189,248,0.35)]"
+                    referrerPolicy="no-referrer"
+                  />
                 </div>
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400 border-2 border-[#020d1a] shadow-xs" />
               </div>
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-center gap-2">
                 <span className="font-heading font-extrabold text-xl tracking-tight text-white">
-                  SST<span className="text-sky-400 font-bold">Padho</span>
+                  SST<span className="text-amber-400">Padho</span>
                 </span>
-                <span className="text-xs font-semibold text-amber-300 font-mono px-1.5 py-0.5 rounded bg-amber-950/60 border border-amber-800/40">
-                  by Arshad
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-gradient-to-r from-sky-950/90 to-[#0b274a]/90 border border-sky-500/40 text-sky-200 shadow-xs tracking-normal">
+                  <span className="text-sky-300/70 font-normal">by</span>
+                  <span className="text-white font-semibold">Arshad</span>
                 </span>
               </div>
             </div>
             <p className="text-xs text-sky-200/60 leading-relaxed max-w-sm">
-              A comprehensive digital SST library for students across all classes.
+              A comprehensive digital SST platform for students across all classes.
               Providing verified NCERT chapter notes, high-yield question banks, interactive India maps,
               and 10-minute rapid revision tools.
             </p>

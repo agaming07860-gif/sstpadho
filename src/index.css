@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 @layer base {
+  html {
+    overflow-x: hidden;
+    width: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     background-color: #031326;
@@ -12,6 +18,18 @@
     background-position: center;
     background-repeat: no-repeat;
     min-height: 100vh;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  #root {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
   }
 
   h1, h2, h3, .font-heading {
@@ -21,6 +39,46 @@
   .font-serif-quote {
     font-family: 'Merriweather', serif;
   }
+}
+
+/* Touch and scrollbar utilities across all devices */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Touch optimization for mobile tap targets */
+@media (pointer: coarse) {
+  button, a, input, select {
+    touch-action: manipulation;
+  }
+}
+
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+}
+
+/* Real Interactive Leaflet Map customization */
+.custom-real-map-pin {
+  background: transparent !important;
+  border: none !important;
+}
+
+.leaflet-tooltip {
+  background: rgba(15, 23, 42, 0.92) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+  border-radius: 0.5rem !important;
+  padding: 4px 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
+.leaflet-tooltip-top:before {
+  border-top-color: rgba(15, 23, 42, 0.92) !important;
 }
 
 @media print {

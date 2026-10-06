@@ -26,33 +26,33 @@ export const PrintNotesModal: React.FC<PrintNotesModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 bg-slate-900/70 backdrop-blur-sm animate-in fade-in">
       <div className="bg-white w-full max-w-4xl max-h-[95vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
         {/* Modal Action Bar (Hidden in Print) */}
-        <div className="p-4 bg-slate-900 text-white flex items-center justify-between no-print">
-          <div className="flex items-center gap-2 text-xs font-bold">
-            <Printer className="w-4 h-4 text-amber-400" />
-            <span>Printable Study Notes &amp; Revision PDF Export</span>
+        <div className="p-3 sm:p-4 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-2 no-print">
+          <div className="flex items-center gap-2 text-xs font-bold truncate max-w-[200px] sm:max-w-none">
+            <Printer className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="truncate">Printable Study Notes &amp; PDF Export</span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
-              id="print-modal-backspace-btn"
+              id="print-modal-back-btn"
               onClick={onClose}
-              className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors border border-blue-400/40"
+              className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors border border-blue-400/40 min-h-[34px]"
               title="Go back / close (Backspace key)"
             >
               <span className="font-mono text-sm leading-none font-bold">⌫</span>
-              <span>Backspace</span>
+              <span>Back</span>
             </button>
 
             <button
               onClick={handlePrint}
-              className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+              className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors min-h-[34px]"
             >
               <Printer className="w-4 h-4" />
-              <span>Print / Save as PDF</span>
+              <span>Print / PDF</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors"
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors min-h-[34px] min-w-[34px] flex items-center justify-center"
             >
               <X className="w-5 h-5" />
             </button>
@@ -60,16 +60,17 @@ export const PrintNotesModal: React.FC<PrintNotesModalProps> = ({
         </div>
 
         {/* Printable Document Area */}
-        <div className="flex-1 overflow-y-auto p-8 sm:p-12 text-slate-900 bg-white font-serif leading-relaxed text-sm space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 md:p-12 text-slate-900 bg-white font-serif leading-relaxed text-sm space-y-6">
           {/* Document Header */}
           <div className="border-b-2 border-slate-900 pb-4 text-center space-y-1 font-sans">
-            <div className="text-[11px] uppercase tracking-widest font-extrabold text-slate-500">
-              SSTPADHO BY ARSHAD • DIGITAL SOCIAL SCIENCE LIBRARY
+            <div className="text-[11px] tracking-wider font-extrabold text-slate-500 uppercase flex items-center justify-center gap-1.5">
+              <img src="/app-logo.png" alt="" className="w-4 h-4 object-contain inline-block" />
+              <span>SSTPadho • Curated by Arshad • Digital Social Science Library</span>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               Class {chapter.classLevel} {sub.label} — Chapter {chapter.chapterNumber}
             </h1>
-            <h2 className="text-lg font-bold text-slate-700">
+            <h2 className="text-base sm:text-lg font-bold text-slate-700">
               {chapter.title}
             </h2>
             <div className="text-xs text-slate-500">
@@ -114,28 +115,30 @@ export const PrintNotesModal: React.FC<PrintNotesModalProps> = ({
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 border-b border-slate-300 pb-1">
                 Important Dates &amp; Events Timeline
               </h3>
-              <table className="w-full text-left text-xs border border-slate-300 border-collapse">
-                <thead>
-                  <tr className="bg-slate-100 font-bold border-b border-slate-300">
-                    <th className="p-1.5 border-r border-slate-300 w-24">Date</th>
-                    <th className="p-1.5 border-r border-slate-300">Event</th>
-                    <th className="p-1.5">Significance</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 font-serif">
-                  {chapter.importantDates.map((d, idx) => (
-                    <tr key={idx}>
-                      <td className="p-1.5 font-bold font-sans border-r border-slate-300">
-                        {d.date}
-                      </td>
-                      <td className="p-1.5 font-sans font-semibold border-r border-slate-300">
-                        {d.event}
-                      </td>
-                      <td className="p-1.5 text-slate-800">{d.significance}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border border-slate-300 border-collapse min-w-[320px]">
+                  <thead>
+                    <tr className="bg-slate-100 font-bold border-b border-slate-300">
+                      <th className="p-1.5 border-r border-slate-300 w-24">Date</th>
+                      <th className="p-1.5 border-r border-slate-300">Event</th>
+                      <th className="p-1.5">Significance</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 font-serif">
+                    {chapter.importantDates.map((d, idx) => (
+                      <tr key={idx}>
+                        <td className="p-1.5 font-bold font-sans border-r border-slate-300 whitespace-nowrap">
+                          {d.date}
+                        </td>
+                        <td className="p-1.5 font-sans font-semibold border-r border-slate-300">
+                          {d.event}
+                        </td>
+                        <td className="p-1.5 text-slate-800">{d.significance}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 

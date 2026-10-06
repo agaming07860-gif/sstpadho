@@ -97,31 +97,31 @@ export const QuestionBankView: React.FC<QuestionBankViewProps> = ({ onBack }) =>
   return (
     <div className="space-y-8 pb-16">
       {/* Page Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-xl space-y-3 border border-indigo-900/40">
+      <div className="p-4 sm:p-6 md:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-xl space-y-3 border border-indigo-900/40">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             {onBack && (
               <button
-                id="question-bank-backspace-btn"
+                id="question-bank-back-btn"
                 onClick={onBack}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md border border-blue-400/40 transition-all"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md border border-blue-400/40 transition-all min-h-[34px]"
                 title="Go back (Backspace key)"
               >
                 <span className="font-mono text-sm leading-none font-bold">⌫</span>
-                <span>Backspace</span>
+                <span>Back</span>
                 <kbd className="hidden sm:inline-block text-[9px] px-1 py-0.2 bg-blue-800/80 rounded font-mono border border-blue-400/30">⌫</kbd>
               </button>
             )}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30">
               <HelpCircle className="w-3.5 h-3.5" />
-              CBSE &amp; NCERT Aligned Practice
+              <span>CBSE &amp; NCERT Practice</span>
             </div>
           </div>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold font-heading text-white">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-heading text-white">
           SST Question Bank &amp; Exam Practice
         </h1>
-        <p className="text-xs sm:text-sm text-indigo-200 max-w-2xl leading-relaxed">
+        <p className="text-xs sm:text-sm text-indigo-200/90 max-w-2xl leading-relaxed">
           Filter thousands of exam questions by Class, Subject, Chapter, and Format.
           Test your active recall with the interactive &quot;Show Answer&quot; toggle and scoring keys.
         </p>
@@ -248,19 +248,19 @@ export const QuestionBankView: React.FC<QuestionBankViewProps> = ({ onBack }) =>
                 className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3"
               >
                 {/* Meta Bar */}
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <span
-                      className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${sub.badgeBg} ${sub.badgeText}`}
+                      className={`text-[11px] font-bold px-2 py-0.5 rounded-md shrink-0 ${sub.badgeBg} ${sub.badgeText}`}
                     >
                       Class {classLevel} • {sub.label}
                     </span>
-                    <span className="font-semibold text-slate-500 hidden sm:inline">
+                    <span className="font-semibold text-slate-600 text-xs">
                       {chapterTitle}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
                     {q.year && (
                       <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
                         {q.year}
@@ -386,7 +386,7 @@ export const QuestionBankView: React.FC<QuestionBankViewProps> = ({ onBack }) =>
         )}
       </div>
 
-      {/* Bottom Backspace Navigation */}
+      {/* Bottom Back Navigation */}
       {onBack && (
         <div className="pt-6 border-t border-slate-700/40 flex items-center justify-center">
           <button
@@ -394,7 +394,7 @@ export const QuestionBankView: React.FC<QuestionBankViewProps> = ({ onBack }) =>
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-lg transition-all border border-blue-400/40"
           >
             <span className="font-mono text-sm font-bold">⌫</span>
-            <span>Backspace to Previous Screen</span>
+            <span>Back to Previous Screen</span>
             <kbd className="text-[10px] px-1.5 py-0.5 bg-blue-800/80 rounded font-mono">⌫</kbd>
           </button>
         </div>
