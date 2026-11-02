@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User account containing credentials, personal profile, and study progress metadata",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique identifier for user" },
+        "fullName": { "type": "string", "description": "User's full name" },
+        "username": { "type": "string", "description": "Unique normalized username" },
+        "passwordHash": { "type": "string", "description": "Salted cryptographic hash of user password" },
+        "passwordSalt": { "type": "string", "description": "Per-user random cryptographic salt" },
+        "securityQuestion": { "type": "string", "description": "Security question for forgot password recovery" },
+        "securityAnswerHash": { "type": "string", "description": "Salted hash of security answer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "lastLoginAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "fullName", "username", "passwordHash", "passwordSalt", "createdAt"]
+    },
+    "UsernameIndex": {
+      "title": "UsernameIndex",
+      "description": "Registry tracking unique username ownership",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "UID of the user who owns this username" },
+        "username": { "type": "string", "description": "Normalized lowercase username" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "username", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Private user account documents"
+    },
+    "/usernames/{username}": {
+      "schema": "UsernameIndex",
+      "description": "Unique usernames mapping index"
+    }
+  }
+}

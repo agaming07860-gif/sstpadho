@@ -1,0 +1,340 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Home,
+  GraduationCap,
+  FolderOpen,
+  MapPin,
+  Search as SearchIcon,
+} from 'lucide-react';
+import { ProgressProvider, useProgress } from './context/ProgressContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { Navbar, ActiveView } from './components/Navbar';
+import { HomePage } from './components/HomePage';
+import { ClassDashboard } from './components/ClassDashboard';
+import { ChapterView } from './components/ChapterView';
+import { QuestionBankView } from './components/QuestionBankView';
+import { MapLabView } from './components/MapLabView';
+import { TimelineView } from './components/TimelineView';
+import { RevisionModeView } from './components/RevisionModeView';
+import { ProgressDashboardView } from './components/ProgressDashboardView';
+import { HighYieldFolderView } from './components/HighYieldFolderView';
+import { SearchModal } from './components/SearchModal';
+import { PrintNotesModal } from './components/PrintNotesModal';
+import { AuthModal } from './components/AuthModal';
+import { AuthGate } from './components/AuthGate';
+import { Footer } from './components/Footer';
+import { Chapter, ClassLevel } from './types/sst';
+import { CHAPTERS_DATA } from './data/chaptersData';
+
+function MainApp() {
+  const { activeClass, setActiveClass } = useProgress();
+  const { isAuthenticated, isLoading } = useAuth();
+  const [currentView, setCurrentView] = useState<ActiveView>('home');
+  const [viewHistory, setViewHistory] = useState<ActiveView[]>([]);
+  const [activeChapter, setActiveChapter] = useState<Chapter>(CHAPTERS_DATA[0]);
+  const [chapterTargetTab, setChapterTargetTab] = useState<'notes' | 'revision' | 'questions' | 'quiz'>('notes');
+  const [mapLabInitialClass, setMapLabInitialClass] = useState<ClassLevel | 'all'>('all');
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+  const [chapterToPrint, setChapterToPrint] = useState<Chapter | null>(null);
+
+  // 1. Loading state while session is verified from secure storage
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#031326] text-white flex flex-col items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 rounded-3xl bg-blue-600/20 border border-blue-500/40 text-blue-400 mx-auto flex items-center justify-center animate-pulse">
+            <GraduationCap className="w-8 h-8 text-sky-400" />
+          </div>
+          <div className="space-y-1">
+            <div className="text-xl font-bold font-heading">
+              SST<span className="text-amber-400">Padho</span>
+            </div>
+            <p className="text-xs text-sky-300/70 font-mono">Loading secure study portal...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Secure Login Gate: When someone visits the website, they see the login page first
+  if (!isAuthenticated) {
+    return <AuthGate />;
+  }
+
+  const handleOpenMapLab = (cls?: ClassLevel | 'all') => {
+    setMapLabInitialClass(cls || 'all');
+    if (currentView !== 'map-lab') {
+      setViewHistory((prev) => [...prev, currentView]);
+      setCurrentView('map-lab');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Backward navigation handler (Backspace action)
+  const handleGoBack = () => {
+    // If a modal is open, backspace/back closes the modal first
+    if (searchModalOpen) {
+      setSearchModalOpen(false);
+      return;
+    }
+    if (printModalOpen) {
+      setPrintModalOpen(false);
+      return;
+    }
+
+    if (viewHistory.length > 0) {
+      const prevView = viewHistory[viewHistory.length - 1];
+      setViewHistory((prev) => prev.slice(0, -1));
+      setCurrentView(prevView);
+    } else {
+      // Default logical fallbacks
+      if (currentView === 'chapter') {
+        setCurrentView('class');
+      } else if (currentView !== 'home') {
+        setCurrentView('home');
+      }
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Keyboard shortcut Cmd+K or Ctrl+K for search, and Backspace for back navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchModalOpen((prev) => !prev);
+        return;
+      }
+
+      // Backspace key navigation (when not typing in an input or textarea)
+      if (e.key === 'Backspace') {
+        const target = e.target as HTMLElement;
+        const isEditable =
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable;
+
+        if (!isEditable) {
+          // Check if we can go back or are in a sub-view
+          if (currentView !== 'home' || searchModalOpen || printModalOpen || viewHistory.length > 0) {
+            e.preventDefault();
+            handleGoBack();
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentView, viewHistory, searchModalOpen, printModalOpen]);
+
+  // Scroll to top when view changes
+  const handleNavigate = (view: ActiveView) => {
+    if (view !== currentView) {
+      setViewHistory((prev) => [...prev, currentView]);
+      setCurrentView(view);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSelectClass = (cls: ClassLevel) => {
+    setActiveClass(cls);
+    if (currentView !== 'class') {
+      setViewHistory((prev) => [...prev, currentView]);
+      setCurrentView('class');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSelectChapter = (
+    chapter: Chapter,
+    targetTab: 'notes' | 'revision' | 'questions' | 'quiz' = 'notes'
+  ) => {
+    setActiveChapter(chapter);
+    setChapterTargetTab(targetTab);
+    if (currentView !== 'chapter') {
+      setViewHistory((prev) => [...prev, currentView]);
+      setCurrentView('chapter');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenPrintModal = (chapter: Chapter) => {
+    setChapterToPrint(chapter);
+    setPrintModalOpen(true);
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col bg-transparent text-slate-100 selection:bg-blue-600 selection:text-white font-sans">
+      {/* Global Navbar */}
+      <Navbar
+        currentView={currentView}
+        onNavigate={handleNavigate}
+        onOpenSearch={() => setSearchModalOpen(true)}
+        onBack={handleGoBack}
+        canGoBack={viewHistory.length > 0 || currentView !== 'home'}
+      />
+
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24 md:pb-8">
+        {currentView === 'home' && (
+          <HomePage
+            onSelectClass={handleSelectClass}
+            onSelectChapter={handleSelectChapter}
+            onNavigateMapLab={handleOpenMapLab}
+            onNavigateTimeline={() => handleNavigate('timeline')}
+            onNavigateQuestionBank={() => handleNavigate('question-bank')}
+            onNavigateRevision={() => handleNavigate('revision')}
+            onNavigateHighYield={() => handleNavigate('high-yield')}
+            onOpenSearch={() => setSearchModalOpen(true)}
+          />
+        )}
+
+        {currentView === 'class' && (
+          <ClassDashboard
+            classLevel={activeClass}
+            onSelectChapter={handleSelectChapter}
+            onNavigateClass={handleSelectClass}
+            onNavigateHighYield={() => handleNavigate('high-yield')}
+            onNavigateMapLab={handleOpenMapLab}
+            onBack={handleGoBack}
+          />
+        )}
+
+        {currentView === 'chapter' && (
+          <ChapterView
+            chapter={activeChapter}
+            initialTab={chapterTargetTab}
+            onBack={handleGoBack}
+            onSelectAnotherChapter={handleSelectChapter}
+            onOpenPrintModal={handleOpenPrintModal}
+          />
+        )}
+
+        {currentView === 'question-bank' && <QuestionBankView onBack={handleGoBack} />}
+
+        {currentView === 'map-lab' && (
+          <MapLabView
+            onBack={handleGoBack}
+            onOpenChapter={(chId) => handleSelectChapter(chId)}
+            initialClassFilter={mapLabInitialClass}
+          />
+        )}
+
+        {currentView === 'timeline' && <TimelineView onBack={handleGoBack} />}
+
+        {currentView === 'revision' && <RevisionModeView onBack={handleGoBack} />}
+
+        {currentView === 'high-yield' && (
+          <HighYieldFolderView
+            onSelectChapter={handleSelectChapter}
+            onBack={handleGoBack}
+            onNavigateClass={handleSelectClass}
+          />
+        )}
+
+        {currentView === 'progress' && (
+          <ProgressDashboardView
+            onSelectChapter={handleSelectChapter}
+            onBack={handleGoBack}
+          />
+        )}
+      </main>
+
+      {/* Global Search Modal */}
+      <SearchModal
+        isOpen={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+        onSelectChapter={handleSelectChapter}
+      />
+
+      {/* Printable Notes Modal */}
+      <PrintNotesModal
+        chapter={chapterToPrint || activeChapter}
+        isOpen={printModalOpen}
+        onClose={() => setPrintModalOpen(false)}
+      />
+
+      {/* Authentication Modal (Sign In / Create Account / Forgot Password) */}
+      <AuthModal />
+
+      {/* Footer */}
+      <Footer onSelectClass={handleSelectClass} onNavigate={handleNavigate} />
+
+      {/* Mobile Sticky Bottom Navigation Dock (Visible on screens under md) */}
+      <nav
+        id="mobile-bottom-dock"
+        aria-label="Mobile Bottom Navigation"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#031326]/95 backdrop-blur-lg border-t border-sky-900/60 safe-bottom px-2 py-1 shadow-2xl"
+      >
+        <div className="grid grid-cols-5 items-center">
+          <button
+            onClick={() => handleNavigate('home')}
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-colors ${
+              currentView === 'home'
+                ? 'text-sky-400 font-bold'
+                : 'text-sky-200/60 hover:text-white'
+            }`}
+          >
+            <Home className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Home</span>
+          </button>
+
+          <button
+            onClick={() => handleNavigate('class')}
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-colors ${
+              currentView === 'class'
+                ? 'text-sky-400 font-bold'
+                : 'text-sky-200/60 hover:text-white'
+            }`}
+          >
+            <GraduationCap className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Class {activeClass}</span>
+          </button>
+
+          <button
+            onClick={() => handleNavigate('high-yield')}
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-colors ${
+              currentView === 'high-yield'
+                ? 'text-sky-400 font-bold'
+                : 'text-sky-200/60 hover:text-white'
+            }`}
+          >
+            <FolderOpen className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">High-Yield</span>
+          </button>
+
+          <button
+            onClick={() => handleNavigate('map-lab')}
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-colors ${
+              currentView === 'map-lab'
+                ? 'text-teal-400 font-bold'
+                : 'text-sky-200/60 hover:text-white'
+            }`}
+          >
+            <MapPin className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Map Lab</span>
+          </button>
+
+          <button
+            onClick={() => setSearchModalOpen(true)}
+            className="flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-sky-200/60 hover:text-white transition-colors"
+          >
+            <SearchIcon className="w-5 h-5 mb-0.5" />
+            <span className="text-[10px] tracking-tight">Search</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <ProgressProvider>
+        <MainApp />
+      </ProgressProvider>
+    </AuthProvider>
+  );
+}
